@@ -16,3 +16,6 @@ For now, thats pretty much all
 - Improve error messages
 - Find a way to get AssetServer root asset dir so you don't need to give the path with the asset dir when loading the bytes
 - Make new examples
+
+
+This crate is designed for use with [Bevy](https://github.com/bevyengine/bevy) [the great engine :)]
