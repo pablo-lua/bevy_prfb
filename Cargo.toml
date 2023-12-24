@@ -1,0 +1,23 @@
+[package]
+name = "bevy_prfb"
+version = "0.12.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bevy = "0.12.1"
+ron = "0.8.1"
+serde = "1.0.193"
+
+[[example]]
+name = "custom_prefab"
+path = "examples/custom_prefab.rs"
+
+[[example]]
+name = "prefab_with_parents"
+path = "examples/prefab_with_parents.rs"
+
+[[example]]
+name = "simple_screen_prefab"
+path = "examples/ui/simple_screen_prefab.rs"

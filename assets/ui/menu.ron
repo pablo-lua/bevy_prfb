@@ -1,0 +1,48 @@
+Container(
+    node: (
+        background_color: (Rgba(red: 1.,green: 0.78,blue: 0.34, alpha: 1.)),
+        style: (
+            padding: (
+                left:Px(10.),
+                right:Px(10.),
+                top:Px(10.),
+                bottom:Px(10.),
+            ),
+            margin: (
+                left: Auto,
+                right: Auto,
+                top: Auto,
+                bottom: Auto
+            )
+        )
+    ),
+    children: [
+        Text(
+            text_data: (
+                text: (
+                    sections: [
+                        (
+                            text: "We will return to the menu",
+                            style: (
+                                font: None,
+                                font_size: 16.,
+                                color: Rgba(red: 0., green: 0., blue: 0., alpha: 1.)
+                            )
+                        ),
+                        (
+                            text: " Shortly",
+                            style: (
+                                font: None,
+                                font_size: 16.,
+                                color: Rgba(red: 0.6, green: 0., blue: 0., alpha: 1.)
+                            )
+                        )
+                    ],
+                    default_font: Some(File("fonts/FiraMono-Medium.ttf"))
+                ),
+                style: (
+                )
+            ),
+        )
+    ]
+)

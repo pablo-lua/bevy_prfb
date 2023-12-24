@@ -1,0 +1,16 @@
+Parent(
+    value: (1),
+    children: [
+        Unique((2)),
+        Unique((3)),
+        Unique((-1)),
+        Parent(
+            value: (2),
+            children: [
+                Unique((-5)),
+                Unique((10)),
+                Unique((5))
+            ]
+        )
+    ]
+)
