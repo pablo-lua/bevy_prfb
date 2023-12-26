@@ -9,6 +9,7 @@ edition = "2021"
 bevy = "0.12.1"
 ron = "0.8.1"
 serde = "1.0.193"
+bevy_prfb_macro ={ version = "0.12.1", path = "src/bevy_prfb_macro"}
 
 [[example]]
 name = "custom_prefab"
