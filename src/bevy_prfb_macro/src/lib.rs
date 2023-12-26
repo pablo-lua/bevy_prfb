@@ -1,12 +1,11 @@
 use proc_macro::TokenStream;
-use quote::{format_ident, quote, ToTokens};
+use quote::{format_ident, quote};
 use syn::{parse_macro_input, Index, GenericParam, token::Comma, TypeParam, ConstParam, punctuated::Punctuated, parse_quote, parse::{Parse, ParseBuffer, ParseStream}, DeriveInput, spanned::Spanned};
 
 
 
 #[proc_macro_derive(PrefabData)]
 pub fn derive_system_param(input: TokenStream) -> TokenStream {
-    let token_stream = input.clone();
     let ast = parse_macro_input!(input as DeriveInput);
     let syn::Data::Struct(syn::DataStruct {
         fields: field_definitions,
@@ -21,11 +20,8 @@ pub fn derive_system_param(input: TokenStream) -> TokenStream {
         .into();
     };
 
-    let mut field_locals = Vec::new();
     let mut fields = Vec::new();
-    let mut field_types = Vec::new();
     for (i, field) in field_definitions.iter().enumerate() {
-        field_locals.push(format_ident!("f{i}"));
         let i = Index::from(i);
         fields.push(
             field
