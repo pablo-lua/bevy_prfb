@@ -30,16 +30,14 @@ pub fn derive_system_param(input: TokenStream) -> TokenStream {
                 .map(|f| quote! { #f })
                 .unwrap_or_else(|| quote! { #i }),
         );
-        field_types.push(&field.ty);
     }
     let struct_name = &ast.ident;
+    let generics = ast.generics;
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     TokenStream::from(quote! {
-        // We define the FetchState struct in an anonymous scope to avoid polluting the user namespace.
-        // The struct can still be accessed via SystemParam::State, e.g. EventReaderState can be accessed via
-        // <EventReader<'static, 'static, T> as SystemParam>::State
         const _: () = {
-            impl bevy_prfb::prefab::PrefabData for #struct_name {
+            impl #impl_generics bevy_prfb::prefab::PrefabData for #struct_name #ty_generics #where_clause {
                 fn insert_into_entity(self, entity: &mut bevy::ecs::world::EntityWorldMut) {
                     #(
                         self.#fields.insert_into_entity(entity);
