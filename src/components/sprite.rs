@@ -7,7 +7,7 @@ use bevy::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{PrefabData, IntoComponent};
+use crate::{PrefabData, IntoComponent, ColorPrefab};
 
 use super::general::{AnchorPrefab, HandlePrefab, TransformPrefab, VisibilityPrefab};
 
@@ -60,7 +60,7 @@ pub struct SpriteBundlePrefab {
 #[serde(default)]
 pub struct SpritePrefab {
     /// The sprite's color tint
-    pub color: Color,
+    pub color: ColorPrefab,
     /// Flip the sprite along the `X` axis
     pub flip_x: bool,
     /// Flip the sprite along the `Y` axis
@@ -76,7 +76,7 @@ pub struct SpritePrefab {
 } impl SpritePrefab {
     pub fn into_sprite(self) -> Sprite {
         Sprite {
-            color: self.color,
+            color: self.color.into_color(),
             flip_x: self.flip_x,
             flip_y: self.flip_y,
             custom_size: self.custom_size,

@@ -44,7 +44,7 @@ use bevy::{
 };
 use serde::{Deserialize, Serialize};
 
-use crate::prefab::{IntoComponent, PrefabData};
+use crate::{prefab::{IntoComponent, PrefabData}, ColorPrefab};
 
 use super::general::{HandlePrefab, BackgroundColorPrefab, BorderColorPrefab, TransformPrefab, VisibilityPrefab};
 
@@ -256,8 +256,8 @@ pub struct TextPrefab {
         }).collect();
         Text {
             sections,
-            alignment: self.alignment.clone(),
-            linebreak_behavior: self.linebreak_behavior.clone()
+            alignment: self.alignment,
+            linebreak_behavior: self.linebreak_behavior
         }
     }
 
@@ -315,7 +315,7 @@ pub struct TextStylePrefab {
     /// A font must be defined at least in one place.
     font: Option<HandlePrefab<Font>>,
     font_size: f32,
-    color: Color
+    color: ColorPrefab
 } impl TextStylePrefab {
     pub fn into_text_style(self, def_handle: Option<HandlePrefab<Font>>) -> Option<TextStyle> {
         let handle = if let Some(h) = self.font {
@@ -332,7 +332,7 @@ pub struct TextStylePrefab {
             TextStyle {
                 font,
                 font_size: self.font_size,
-                color: self.color
+                color: self.color.into_color()
             }
         )
     }

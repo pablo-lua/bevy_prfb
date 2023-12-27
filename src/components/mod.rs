@@ -110,6 +110,9 @@ pub mod general {
         #[serde(skip)]
         Loaded(Handle<A>),
 
+        // When no file is expected, this will insert an Handle<A>::default in the entity
+        None
+
     } impl <A: Asset>HandlePrefab<A> {
         pub fn load_self(&self, asset_server: &AssetServer) -> Option<Handle<A>> {
             match self {
@@ -120,6 +123,9 @@ pub mod general {
                     println!("[warn] Tried to load already loaded asset");
                     None
                 }
+                Self::None => {
+                    Some(Default::default())
+                }
             }
         }
 
@@ -129,42 +135,64 @@ pub mod general {
                     println!("[warn] Asset not yet loaded");
                     None
                 }
-                HandlePrefab::Loaded(h) => Some(h)
+                HandlePrefab::Loaded(h) => Some(h),
+                HandlePrefab::None => Some(Default::default())
             }
         }
     }
 
     #[derive(Clone, Deserialize, Serialize)]
-    pub struct BackgroundColorPrefab(pub Color);
+    pub struct BackgroundColorPrefab(pub ColorPrefab);
     impl Default for BackgroundColorPrefab {
         fn default() -> Self {
-            Self(Color::NONE)
+            Self(ColorPrefab::Rgba(0., 0., 0., 0.))
         }
     } impl BackgroundColorPrefab {
         pub fn from_white() -> Self {
-            Self(Color::WHITE)
+            Self(ColorPrefab::Rgba(1., 1., 1., 1.))
         }
     } impl IntoComponent for BackgroundColorPrefab {
         type Component = BackgroundColor;
         fn into_component(self) -> Self::Component {
-            BackgroundColor(self.0)
+            BackgroundColor(self.0.into_color())
+        }
+    }
+
+    #[derive(Debug, Clone, Deserialize, Serialize)]
+    pub enum ColorPrefab {
+        Rgba(f32, f32, f32, f32),
+        RgbaLinear(f32, f32, f32, f32),
+        Hsla(f32, f32, f32, f32),
+        Lcha(f32, f32, f32, f32)
+    } impl ColorPrefab {
+        pub fn into_color(self) -> Color {
+            match self {
+                ColorPrefab::Hsla(h, s, l, a) => Color::hsla(h, s, l, a),
+                ColorPrefab::Lcha(l, c, h, a) => Color::lcha(l, c, h, a),
+                ColorPrefab::Rgba(r, g, b, a) => Color::rgba(r, g, b, a),
+                ColorPrefab::RgbaLinear(r, g, b, a) => Color::rgba_linear(r, g, b, a)
+            }
+        }
+    } impl Default for ColorPrefab {
+        fn default() -> Self {
+            Self::Rgba(1., 1., 1., 1.)
         }
     }
 
     #[derive(Clone, Deserialize, Serialize)]
-    pub struct BorderColorPrefab(pub Color);
+    pub struct BorderColorPrefab(pub ColorPrefab);
     impl Default for BorderColorPrefab {
         fn default() -> Self {
-            Self(Color::NONE)
+            Self(ColorPrefab::Rgba(0., 0., 0., 0.))
         }
     } impl BorderColorPrefab {
         pub fn from_white() -> Self {
-            Self(Color::WHITE)
+            Self(ColorPrefab::Rgba(1., 1., 1., 1.))
         }
     } impl IntoComponent for BorderColorPrefab {
         type Component = BorderColor;
         fn into_component(self) -> Self::Component {
-            BorderColor(self.0)
+            BorderColor(self.0.into_color())
         }
     }
 
