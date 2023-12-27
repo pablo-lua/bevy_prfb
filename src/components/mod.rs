@@ -110,6 +110,9 @@ pub mod general {
         #[serde(skip)]
         Loaded(Handle<A>),
 
+        // When no file is expected, this will insert an Handle<A>::default in the entity
+        None
+
     } impl <A: Asset>HandlePrefab<A> {
         pub fn load_self(&self, asset_server: &AssetServer) -> Option<Handle<A>> {
             match self {
@@ -119,6 +122,9 @@ pub mod general {
                 Self::Loaded(_) => {
                     println!("[warn] Tried to load already loaded asset");
                     None
+                }
+                Self::None => {
+                    Some(Default::default())
                 }
             }
         }
