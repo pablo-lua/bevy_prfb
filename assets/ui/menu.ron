@@ -1,6 +1,6 @@
 Container(
     node: (
-        background_color: (Rgba(red: 1.,green: 0.78,blue: 0.34, alpha: 1.)),
+        background_color: (Rgba(1., 0.78, 0.34, 1.)),
         style: (
             padding: (
                 left:Px(10.),
@@ -26,7 +26,7 @@ Container(
                             style: (
                                 font: None,
                                 font_size: 16.,
-                                color: Rgba(red: 0., green: 0., blue: 0., alpha: 1.)
+                                color: Rgba(0., 0., 0., 1.)
                             )
                         ),
                         (
@@ -34,7 +34,7 @@ Container(
                             style: (
                                 font: None,
                                 font_size: 16.,
-                                color: Rgba(red: 0.6, green: 0., blue: 0., alpha: 1.)
+                                color: Rgba(0.6, 0., 0., 1.)
                             )
                         )
                     ],
