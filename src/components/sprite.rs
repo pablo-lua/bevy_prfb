@@ -1,9 +1,9 @@
 use bevy::{
-    prelude::{
-        AssetServer, Res
-    },
-    ecs::system::{RunSystemOnce, In},
-    render::{texture::Image, color::Color}, sprite::{SpriteBundle, Sprite}, math::{Vec2, Rect}
+    ecs::system::{In, RunSystemOnce},
+    math::{Rect, Vec2},
+    prelude::{AssetServer, Res},
+    render::{color::Color, texture::Image},
+    sprite::{Sprite, SpriteBundle},
 };
 use serde::{Deserialize, Serialize};
 
@@ -20,8 +20,9 @@ pub struct SpriteBundlePrefab {
     #[serde(default)]
     transform: TransformPrefab,
     #[serde(default)]
-    visibility: VisibilityPrefab
-} impl SpriteBundlePrefab {
+    visibility: VisibilityPrefab,
+}
+impl SpriteBundlePrefab {
     pub fn into_sprite_bundle(self) -> Option<SpriteBundle> {
         if let Some(handle) = self.texture.into_handle() {
             Some(SpriteBundle {
@@ -35,7 +36,8 @@ pub struct SpriteBundlePrefab {
             None
         }
     }
-} impl PrefabData for SpriteBundlePrefab {
+}
+impl PrefabData for SpriteBundlePrefab {
     fn insert_into_entity(self, entidade: &mut bevy::prelude::EntityWorldMut) {
         let spritebundle = self.into_sprite_bundle();
         if let Some(s) = spritebundle {
@@ -43,14 +45,16 @@ pub struct SpriteBundlePrefab {
         }
     }
     fn load_sub_assets(&mut self, _world: &mut bevy::prelude::World) -> bool {
-        let handle = _world.run_system_once_with(self.texture.clone(), |In(texture): In<HandlePrefab<Image>>, asset_server: Res<AssetServer>| {
-            texture.load_self(&asset_server)
-        });
+        let handle = _world.run_system_once_with(
+            self.texture.clone(),
+            |In(texture): In<HandlePrefab<Image>>, asset_server: Res<AssetServer>| {
+                texture.load_self(&asset_server)
+            },
+        );
         if let Some(h) = handle {
             self.texture = HandlePrefab::Loaded(h);
             false
         } else {
-
             true
         }
     }
@@ -73,7 +77,8 @@ pub struct SpritePrefab {
     pub rect: Option<Rect>,
     /// [`Anchor`] point of the sprite in the world
     pub anchor: AnchorPrefab,
-} impl SpritePrefab {
+}
+impl SpritePrefab {
     pub fn into_sprite(self) -> Sprite {
         Sprite {
             color: self.color.into_color(),
@@ -84,7 +89,8 @@ pub struct SpritePrefab {
             anchor: self.anchor.into_anchor(),
         }
     }
-} impl IntoComponent for SpritePrefab {
+}
+impl IntoComponent for SpritePrefab {
     type Component = Sprite;
     fn into_component(self) -> Self::Component {
         self.into_sprite()
