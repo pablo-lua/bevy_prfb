@@ -1,0 +1,276 @@
+Container(
+    node: (
+        style: (
+            width: Percent(100.0),
+            height: Percent(100.0),
+            justify_content: SpaceBetween,
+        )
+    ),
+    children: [
+        Container(
+            node: (
+                style: (
+                    width: Px(200.),
+                    border: All(Px(2.))
+                ),
+                background_color: (Rgba(0.65, 0.65, 0.65, 1.))
+            ),
+            children: [
+                Container(
+                    node: (
+                        style: (
+                            width: Percent(100.),
+                        ),
+                        background_color: (Rgba(0.15, 0.15, 0.15, 1.)),
+                    ),
+                    children: [
+                        Text(
+                            text_data: (
+                                style: (
+                                    margin: All(Px(5.))
+                                ),
+                                text: (
+                                    sections: [
+                                        (
+                                            text: "Text Example",
+                                            style: (
+                                                font: File("fonts/FiraSans-Bold.ttf"),
+                                                font_size: 30.
+                                            ),
+                                        )
+                                    ],
+                                )
+                            ),
+                            custom_data: Some((
+                                label: Some(Label)
+                            ))
+                        )
+                    ]
+                ),
+            ]
+        ),
+        Container(
+            node: (
+                style: (
+                    flex_direction: Column,
+                    justify_content: Center,
+                    align_items: Center,
+                    width: Px(200.),
+                ),
+                background_color: (Rgba(0.15, 0.15, 0.15, 1.))
+            ),
+            children: [
+                Text(
+                    text_data: (
+                        text: (
+                            sections: [
+                                (
+                                    text: "Scrolling list",
+                                    style: (
+                                        font: File("fonts/FiraSans-Bold.ttf"),
+                                        font_size: 25.
+                                    ),
+                                )
+                            ],
+                        )
+                    ),
+                    custom_data: Some((
+                        label: Some(Label)
+                    ))
+                ),
+                Container(
+                    node: (
+                        style: (
+                            flex_direction: Column,
+                            align_self: Stretch,
+                            height: Percent(50.),
+                            overflow: (
+                                x: Visible,
+                                y: Clip,
+                            ),
+                        ),
+                        background_color: (Rgba(0.1, 0.1, 0.1, 1.))
+                    ),
+                    children: [
+                        Custom(Repeat(
+                            node: (
+                                style: (
+                                    flex_direction: Column,
+                                    align_items: Center,
+                                )
+                            ),
+                            ui_to_repeat: Text(
+                                text_data: (
+                                    text: (
+                                        sections: [
+                                            (
+                                                text: "Item",
+                                                style: (
+                                                    font: File("fonts/FiraSans-Bold.ttf"),
+                                                    font_size: 20.
+                                                ),
+                                            )
+                                        ],
+                                    )
+                                ),
+                                custom_data: Some((
+                                    label: Some(Label),
+                                    accessibility: Some((ListItem))
+                                ))
+                            ),
+                            times: 30,
+                            custom_data: Some((
+                                accessibility: Some((List)),
+                                list: Some((position: 0.))
+                            ))
+                        ))
+                    ]
+                )
+            ]
+        ),
+        Container(
+            node: (
+                style: (
+                    width: Px(200.0),
+                    height: Px(200.0),
+                    position_type: Absolute,
+                    left: Px(210.),
+                    bottom: Px(10.),
+                    border: All(Px(20.)),
+                ),
+                border_color: (Rgba(0., 1., 0., 1.)),
+                background_color: (Rgba(0.4, 0.4, 1., 1.))
+            ),
+            children: [
+                Container(
+                    node: (
+                        style: (
+                            width: Percent(100.0),
+                            height: Percent(100.0),
+                        ),
+                        background_color: (Rgba(0.8, 0.8, 1., 1.))
+                    )
+                )
+            ]
+        ),
+        Container(
+            node: (
+                style: (
+                    width: Percent(100.0),
+                    height: Percent(100.0),
+                    position_type: Absolute,
+                    align_items: Center,
+                    justify_content: Center,
+                )
+            ),
+            //Square area
+            children: [
+                Container(
+                    node: (
+                        style: (
+                            width: Px(100.0),
+                            height: Px(100.0),
+                        ),
+                        background_color: (Rgba(1., 0., 0., 1.))
+                    ),
+                    children: [
+                        Container(
+                            node: (
+                                style: (
+                                    width: Percent(100.0),
+                                    height: Percent(100.0),
+                                    position_type: Absolute,
+                                    left: Px(20.),
+                                    bottom: Px(20.),
+                                ),
+                                background_color: (Rgba(1., 0.3, 0.3, 1.))
+                            )
+                        ),
+                        Container(
+                            node: (
+                                style: (
+                                    width: Percent(100.0),
+                                    height: Percent(100.0),
+                                    position_type: Absolute,
+                                    left: Px(40.),
+                                    bottom: Px(40.),
+                                ),
+                                background_color: (Rgba(1., 0.5, 0.5, 1.))
+                            )
+                        ),
+                        Container(
+                            node: (
+                                style: (
+                                    width: Percent(100.0),
+                                    height: Percent(100.0),
+                                    position_type: Absolute,
+                                    left: Px(60.),
+                                    bottom: Px(60.),
+                                ),
+                                background_color: (Rgba(1., 0.7, 0.7, 1.))
+                            )
+                        ),
+                        Container(
+                            node: (
+                                style: (
+                                    width: Percent(100.0),
+                                    height: Percent(100.0),
+                                    position_type: Absolute,
+                                    left: Px(80.),
+                                    bottom: Px(80.),
+                                ),
+                                background_color: (Rgba(1., 0.9, 0.9, 0.4))
+                            )
+                        ),
+                    ]
+                )
+            ]
+        ),
+        Container(
+            node: (
+                style: (
+                    width: Percent(100.0),
+                    position_type: Absolute,
+                    justify_content: Center,
+                    align_items: FlexStart,
+                )
+            ),
+            children: [
+                Container(
+                    node: (
+                        style: (
+                            width: Px(500.0),
+                            height: Px(125.0),
+                            margin: Custom(top: VMin(5.)),
+                        ),
+                        background_color: (Rgba(1., 1., 1., 1.))
+                    ),
+                    other_data: Some((
+                        image_data: Some((
+                            texture: File("images/bevy_logo_dark_big.png")
+                        ))
+                    )),
+                    children: [
+                        Container(
+                            node: (
+                                style: (
+                                    display: None
+                                )
+                            ),
+                            other_data: Some((
+                                text_data: Some((
+                                    sections: [
+                                        (
+                                            text: "Bevy Logo",
+                                        )
+                                    ]
+                                ))
+                            ))
+                        )
+                    ]
+                )
+
+            ]
+        )
+    ],
+)
