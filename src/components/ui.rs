@@ -277,7 +277,8 @@ pub struct TextPrefab {
     pub alignment: TextAlignment,
     #[serde(default = "def_break")]
     pub linebreak_behavior: BreakLineOn,
-    pub default_font: Option<HandlePrefab<Font>>,
+    #[serde(default)]
+    pub default_font: HandlePrefab<Font>,
 }
 impl TextPrefab {
     pub fn into_text(mut self) -> Text {
@@ -291,13 +292,13 @@ impl TextPrefab {
         Text {
             sections,
             alignment: self.alignment,
-            linebreak_behavior: self.linebreak_behavior
+            linebreak_behavior: self.linebreak_behavior,
         }
     }
 
     pub fn load(&mut self, asset_server: &AssetServer) -> bool {
         let mut loaded = false;
-        if let Some(def_font) = self.default_font.as_mut() {
+        if let Some(def_font) = self.default_font.into_option_mut() {
             let def_handle = def_font.load_self(&asset_server);
             if let Some(dh) = def_handle {
                 *def_font = HandlePrefab::Loaded(dh);
@@ -317,7 +318,7 @@ impl Default for TextPrefab {
             sections: Default::default(),
             alignment: TextAlignment::Left,
             linebreak_behavior: BreakLineOn::WordBoundary,
-            default_font: None,
+            default_font: HandlePrefab::None,
         }
     }
 }
@@ -329,10 +330,11 @@ fn def_break() -> BreakLineOn {
 #[derive(Clone, Deserialize, Serialize)]
 pub struct TextSectionPrefab {
     pub text: String,
+    #[serde(default)]
     pub style: TextStylePrefab,
 }
 impl TextSectionPrefab {
-    pub fn into_section(self, def_handle: Option<HandlePrefab<Font>>) -> Option<TextSection> {
+    pub fn into_section(self, def_handle: HandlePrefab<Font>) -> Option<TextSection> {
         let style = self.style.into_text_style(def_handle);
         let Some(s) = style else {
             println!("[warn] No font given");
@@ -348,36 +350,36 @@ impl TextSectionPrefab {
 #[derive(Clone, Deserialize, Serialize)]
 pub struct TextStylePrefab {
     /// A font must be defined at least in one place.
-    font: Option<HandlePrefab<Font>>,
+    #[serde(default)]
+    font: HandlePrefab<Font>,
 
     #[serde(default = "default_font_size")]
     font_size: f32,
     #[serde(default)]
-    color: ColorPrefab
-} impl TextStylePrefab {
-    pub fn into_text_style(self, def_handle: Option<HandlePrefab<Font>>) -> Option<TextStyle> {
-        let handle = if let Some(h) = self.font {
+    color: ColorPrefab,
+}
+impl TextStylePrefab {
+    pub fn into_text_style(self, def_handle: HandlePrefab<Font>) -> Option<TextStyle> {
+        let handle = if let Some(h) = self.font.into_option() {
             h.into_handle()
-        } else if let Some(h) = def_handle {
+        } else if let Some(h) = def_handle.into_option() {
             h.into_handle()
         } else {
-            return None;
+            Some(Default::default())
         };
         let Some(font) = handle else {
             return None;
         };
-        Some(
-            TextStyle {
-                font,
-                font_size: self.font_size,
-                color: self.color.into_color()
-            }
-        )
+        Some(TextStyle {
+            font,
+            font_size: self.font_size,
+            color: self.color.into_color(),
+        })
     }
     pub fn load_self(&mut self, asset_server: &AssetServer) -> bool {
-        if let Some(h) = self.font.as_ref() {
+        if let Some(h) = self.font.into_option_mut() {
             if let Some(handle) = h.load_self(asset_server) {
-                self.font = Some(HandlePrefab::Loaded(handle));
+                *h = HandlePrefab::Loaded(handle);
                 false
             } else {
                 true
