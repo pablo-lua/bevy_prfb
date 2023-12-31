@@ -1,8 +1,6 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Index, DeriveInput, spanned::Spanned};
-
-
+use syn::{parse_macro_input, spanned::Spanned, DeriveInput, Index};
 
 #[proc_macro_derive(PrefabData)]
 pub fn derive_system_param(input: TokenStream) -> TokenStream {
@@ -12,12 +10,9 @@ pub fn derive_system_param(input: TokenStream) -> TokenStream {
         ..
     }) = ast.data
     else {
-        return syn::Error::new(
-            ast.span(),
-            "Invalid `PrefabData` type: expected a `struct`",
-        )
-        .into_compile_error()
-        .into();
+        return syn::Error::new(ast.span(), "Invalid `PrefabData` type: expected a `struct`")
+            .into_compile_error()
+            .into();
     };
 
     let mut fields = Vec::new();

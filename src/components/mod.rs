@@ -1,3 +1,4 @@
+pub mod a11y;
 pub mod sprite;
 pub mod ui;
 
@@ -5,16 +6,17 @@ pub use general::*;
 
 pub mod general {
     use bevy::{
-        prelude::{
-            Asset, AssetServer
-        },
         asset::Handle,
-        sprite::Anchor, math::{Vec2, Vec3, Quat}, transform::components::Transform, render::{color::Color, view::Visibility}, ui::{BackgroundColor, BorderColor}
+        math::{Quat, Vec2, Vec3},
+        prelude::{Asset, AssetServer},
+        render::{color::Color, view::Visibility},
+        sprite::Anchor,
+        transform::components::Transform,
+        ui::{BackgroundColor, BorderColor},
     };
     use serde::{Deserialize, Serialize};
 
     use crate::prefab::IntoComponent;
-
 
     #[derive(Default, Debug, Clone, Deserialize, Serialize)]
     pub enum AnchorPrefab {
@@ -29,7 +31,8 @@ pub mod general {
         TopCenter,
         TopRight,
         Custom(Vec2),
-    } impl AnchorPrefab {
+    }
+    impl AnchorPrefab {
         pub fn into_anchor(self) -> Anchor {
             match self {
                 AnchorPrefab::Center => Anchor::Center,
@@ -44,7 +47,8 @@ pub mod general {
                 AnchorPrefab::Custom(c) => Anchor::Custom(c),
             }
         }
-    } impl IntoComponent for AnchorPrefab {
+    }
+    impl IntoComponent for AnchorPrefab {
         type Component = Anchor;
         fn into_component(self) -> Self::Component {
             self.into_anchor()
@@ -62,40 +66,40 @@ pub mod general {
             #[serde(default)]
             scale: [f32; 3],
             #[serde(default)]
-            rotation: [f32; 4]
-        }
-    } impl TransformPrefab {
+            rotation: [f32; 4],
+        },
+    }
+    impl TransformPrefab {
         const IDENTITY: Self = Self::Custom {
             translation: [0., 0., 0.],
             scale: [1., 1., 1.],
             rotation: [0., 0., 0., 1.],
         };
-    } impl Default for TransformPrefab {
+    }
+    impl Default for TransformPrefab {
         fn default() -> Self {
             Self::IDENTITY
         }
-    } impl TransformPrefab {
+    }
+    impl TransformPrefab {
         pub fn into_transform(self) -> Transform {
             match self {
-                Self::XYZ(x, y, z) => {
-                    Transform::from_xyz(x, y, z)
-                }
-                Self::Quat(x, y, z, w) => {
-                    Transform::from_rotation(Quat::from_xyzw(x, y, z, w))
-                }
-                Self::Scale(x, y, z) => {
-                    Transform::from_scale(Vec3::new(x, y, z))
-                }
-                Self::Custom { translation, scale, rotation } => {
-                    Transform {
-                        translation: Vec3::from_array(translation),
-                        scale: Vec3::from_array(scale),
-                        rotation: Quat::from_array(rotation)
-                    }
-                }
+                Self::XYZ(x, y, z) => Transform::from_xyz(x, y, z),
+                Self::Quat(x, y, z, w) => Transform::from_rotation(Quat::from_xyzw(x, y, z, w)),
+                Self::Scale(x, y, z) => Transform::from_scale(Vec3::new(x, y, z)),
+                Self::Custom {
+                    translation,
+                    scale,
+                    rotation,
+                } => Transform {
+                    translation: Vec3::from_array(translation),
+                    scale: Vec3::from_array(scale),
+                    rotation: Quat::from_array(rotation),
+                },
             }
         }
-    } impl IntoComponent for TransformPrefab {
+    }
+    impl IntoComponent for TransformPrefab {
         type Component = Transform;
         fn into_component(self) -> Self::Component {
             self.into_transform()
@@ -111,21 +115,17 @@ pub mod general {
         Loaded(Handle<A>),
 
         // When no file is expected, this will insert an Handle<A>::default in the entity
-        None
-
-    } impl <A: Asset>HandlePrefab<A> {
+        None,
+    }
+    impl<A: Asset> HandlePrefab<A> {
         pub fn load_self(&self, asset_server: &AssetServer) -> Option<Handle<A>> {
             match self {
-                Self::File(s) => {
-                    Some(asset_server.load(s.to_owned()))
-                }
+                Self::File(s) => Some(asset_server.load(s.to_owned())),
                 Self::Loaded(_) => {
                     println!("[warn] Tried to load already loaded asset");
                     None
                 }
-                Self::None => {
-                    Some(Default::default())
-                }
+                Self::None => Some(Default::default()),
             }
         }
 
@@ -136,8 +136,35 @@ pub mod general {
                     None
                 }
                 HandlePrefab::Loaded(h) => Some(h),
-                HandlePrefab::None => Some(Default::default())
+                HandlePrefab::None => Some(Default::default()),
             }
+        }
+
+        // If self is None, returns None
+        pub fn into_option(self) -> Option<Self> {
+            match self {
+                HandlePrefab::None => None,
+                _ => Some(self),
+            }
+        }
+
+        pub fn into_option_ref(&self) -> Option<&Self> {
+            match self {
+                HandlePrefab::None => None,
+                _ => Some(self),
+            }
+        }
+
+        pub fn into_option_mut(&mut self) -> Option<&mut Self> {
+            match self {
+                HandlePrefab::None => None,
+                _ => Some(self),
+            }
+        }
+    }
+    impl<A: Asset> Default for HandlePrefab<A> {
+        fn default() -> Self {
+            Self::None
         }
     }
 
@@ -147,11 +174,13 @@ pub mod general {
         fn default() -> Self {
             Self(ColorPrefab::Rgba(0., 0., 0., 0.))
         }
-    } impl BackgroundColorPrefab {
+    }
+    impl BackgroundColorPrefab {
         pub fn from_white() -> Self {
             Self(ColorPrefab::Rgba(1., 1., 1., 1.))
         }
-    } impl IntoComponent for BackgroundColorPrefab {
+    }
+    impl IntoComponent for BackgroundColorPrefab {
         type Component = BackgroundColor;
         fn into_component(self) -> Self::Component {
             BackgroundColor(self.0.into_color())
@@ -163,17 +192,19 @@ pub mod general {
         Rgba(f32, f32, f32, f32),
         RgbaLinear(f32, f32, f32, f32),
         Hsla(f32, f32, f32, f32),
-        Lcha(f32, f32, f32, f32)
-    } impl ColorPrefab {
+        Lcha(f32, f32, f32, f32),
+    }
+    impl ColorPrefab {
         pub fn into_color(self) -> Color {
             match self {
                 ColorPrefab::Hsla(h, s, l, a) => Color::hsla(h, s, l, a),
                 ColorPrefab::Lcha(l, c, h, a) => Color::lcha(l, c, h, a),
                 ColorPrefab::Rgba(r, g, b, a) => Color::rgba(r, g, b, a),
-                ColorPrefab::RgbaLinear(r, g, b, a) => Color::rgba_linear(r, g, b, a)
+                ColorPrefab::RgbaLinear(r, g, b, a) => Color::rgba_linear(r, g, b, a),
             }
         }
-    } impl Default for ColorPrefab {
+    }
+    impl Default for ColorPrefab {
         fn default() -> Self {
             Self::Rgba(1., 1., 1., 1.)
         }
@@ -185,11 +216,13 @@ pub mod general {
         fn default() -> Self {
             Self(ColorPrefab::Rgba(0., 0., 0., 0.))
         }
-    } impl BorderColorPrefab {
+    }
+    impl BorderColorPrefab {
         pub fn from_white() -> Self {
             Self(ColorPrefab::Rgba(1., 1., 1., 1.))
         }
-    } impl IntoComponent for BorderColorPrefab {
+    }
+    impl IntoComponent for BorderColorPrefab {
         type Component = BorderColor;
         fn into_component(self) -> Self::Component {
             BorderColor(self.0.into_color())
@@ -202,7 +235,8 @@ pub mod general {
         Inherited,
         Hidden,
         Visible,
-    } impl VisibilityPrefab {
+    }
+    impl VisibilityPrefab {
         pub fn into_visibility(self) -> Visibility {
             match self {
                 Self::Inherited => Visibility::Inherited,
@@ -210,7 +244,8 @@ pub mod general {
                 Self::Visible => Visibility::Visible,
             }
         }
-    } impl IntoComponent for VisibilityPrefab {
+    }
+    impl IntoComponent for VisibilityPrefab {
         type Component = Visibility;
         fn into_component(self) -> Self::Component {
             self.into_visibility()

@@ -2,18 +2,8 @@ Container(
     node: (
         background_color: (Rgba(1., 0.78, 0.34, 1.)),
         style: (
-            padding: (
-                left:Px(10.),
-                right:Px(10.),
-                top:Px(10.),
-                bottom:Px(10.),
-            ),
-            margin: (
-                left: Auto,
-                right: Auto,
-                top: Auto,
-                bottom: Auto
-            )
+            padding: All(Px(10.)),
+            margin: All(Auto)
         )
     ),
     children: [
@@ -24,7 +14,6 @@ Container(
                         (
                             text: "We will return to the menu",
                             style: (
-                                font: None,
                                 font_size: 16.,
                                 color: Rgba(0., 0., 0., 1.)
                             )
@@ -32,13 +21,12 @@ Container(
                         (
                             text: " Shortly",
                             style: (
-                                font: None,
                                 font_size: 16.,
                                 color: Rgba(0.6, 0., 0., 1.)
                             )
                         )
                     ],
-                    default_font: Some(File("fonts/FiraMono-Medium.ttf"))
+                    default_font: File("fonts/FiraMono-Medium.ttf")
                 ),
                 style: (
                 )

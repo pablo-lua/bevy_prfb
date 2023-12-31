@@ -1,52 +1,29 @@
+use crate as bevy_prfb;
 use bevy::{
+    asset::AssetServer,
+    log::warn,
+    render::texture::Image,
+    text::{BreakLineOn, Font, Text, TextAlignment, TextSection, TextStyle},
     ui::{
-        node_bundles::{
-            NodeBundle,
-            TextBundle,
-            ButtonBundle,
-            ImageBundle
-        },
-        Style,
-        FocusPolicy,
+        node_bundles::{ButtonBundle, ImageBundle, NodeBundle, TextBundle},
+        widget::Label,
+        AlignContent, AlignItems, AlignSelf, Direction, Display, FlexDirection, FlexWrap,
+        FocusPolicy, GridAutoFlow, GridPlacement, GridTrack, JustifyContent, JustifyItems,
+        JustifySelf, Overflow, PositionType, RepeatedGridTrack, Style, UiImage, UiRect, Val,
         ZIndex,
-        PositionType,
-        Overflow,
-        Direction,
-        Val,
-        AlignItems,
-        JustifyItems,
-        AlignSelf,
-        JustifySelf,
-        AlignContent,
-        JustifyContent,
-        UiRect,
-        FlexDirection,
-        FlexWrap,
-        GridAutoFlow,
-        RepeatedGridTrack,
-        GridTrack,
-        GridPlacement,
-        Display,
-        UiImage
     },
-    render::{
-        color::Color, texture::Image
-    },
-    text::{
-        Text,
-        Font,
-        TextAlignment,
-        BreakLineOn,
-        TextStyle,
-        TextSection
-    },
-    asset::AssetServer, log::warn
 };
+use bevy_prfb_macro::PrefabData;
 use serde::{Deserialize, Serialize};
 
-use crate::{prefab::{IntoComponent, PrefabData}, ColorPrefab};
+use crate::{
+    prefab::{IntoComponent, PrefabData},
+    ColorPrefab,
+};
 
-use super::general::{HandlePrefab, BackgroundColorPrefab, BorderColorPrefab, TransformPrefab, VisibilityPrefab};
+use super::general::{
+    BackgroundColorPrefab, BorderColorPrefab, HandlePrefab, TransformPrefab, VisibilityPrefab,
+};
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -57,7 +34,8 @@ pub struct NodeBundlePrefab {
     pub focus_policy: FocusPolicy,
     pub visibility: VisibilityPrefab,
     pub z_index: ZIndexPrefab,
-} impl Default for NodeBundlePrefab {
+}
+impl Default for NodeBundlePrefab {
     fn default() -> Self {
         Self {
             background_color: Default::default(),
@@ -68,7 +46,8 @@ pub struct NodeBundlePrefab {
             z_index: Default::default(),
         }
     }
-} impl PrefabData for NodeBundlePrefab {
+}
+impl PrefabData for NodeBundlePrefab {
     fn insert_into_entity(self, entidade: &mut bevy::prelude::EntityWorldMut) {
         let node = NodeBundle {
             style: self.style.into_component(),
@@ -107,9 +86,9 @@ pub struct StylePrefab {
     pub justify_self: JustifySelf,
     pub align_content: AlignContent,
     pub justify_content: JustifyContent,
-    pub margin: UiRect,
-    pub padding: UiRect,
-    pub border: UiRect,
+    pub margin: UiRectPrefab,
+    pub padding: UiRectPrefab,
+    pub border: UiRectPrefab,
     pub flex_direction: FlexDirection,
     pub flex_wrap: FlexWrap,
     pub flex_grow: f32,
@@ -124,7 +103,8 @@ pub struct StylePrefab {
     pub grid_auto_columns: Vec<GridTrack>,
     pub grid_row: GridPlacement,
     pub grid_column: GridPlacement,
-} impl IntoComponent for StylePrefab {
+}
+impl IntoComponent for StylePrefab {
     type Component = Style;
     fn into_component(self) -> Self::Component {
         Style {
@@ -149,9 +129,9 @@ pub struct StylePrefab {
             justify_self: self.justify_self,
             align_content: self.align_content,
             justify_content: self.justify_content,
-            margin: self.margin,
-            padding: self.padding,
-            border: self.border,
+            margin: self.margin.into_rect(),
+            padding: self.padding.into_rect(),
+            border: self.border.into_rect(),
             flex_direction: self.flex_direction,
             flex_wrap: self.flex_wrap,
             flex_grow: self.flex_grow,
@@ -171,10 +151,57 @@ pub struct StylePrefab {
 }
 
 #[derive(Clone, Deserialize, Serialize)]
+pub enum UiRectPrefab {
+    All(Val),
+    Horizontal(Val),
+    Vertical(Val),
+    Custom {
+        #[serde(default = "val_zero")]
+        right: Val,
+        #[serde(default = "val_zero")]
+        top: Val,
+        #[serde(default = "val_zero")]
+        left: Val,
+        #[serde(default = "val_zero")]
+        bottom: Val,
+    },
+}
+impl UiRectPrefab {
+    fn into_rect(self) -> UiRect {
+        match self {
+            Self::All(v) => UiRect::all(v),
+            Self::Horizontal(h) => UiRect::horizontal(h),
+            Self::Vertical(v) => UiRect::vertical(v),
+            Self::Custom {
+                right,
+                top,
+                left,
+                bottom,
+            } => UiRect {
+                left,
+                right,
+                top,
+                bottom,
+            },
+        }
+    }
+}
+impl Default for UiRectPrefab {
+    fn default() -> Self {
+        Self::All(val_zero())
+    }
+}
+
+fn val_zero() -> Val {
+    Val::ZERO
+}
+
+#[derive(Clone, Deserialize, Serialize)]
 pub enum ZIndexPrefab {
     Local(i32),
-    Global(i32)
-} impl IntoComponent for ZIndexPrefab {
+    Global(i32),
+}
+impl IntoComponent for ZIndexPrefab {
     type Component = ZIndex;
     fn into_component(self) -> Self::Component {
         match self {
@@ -182,7 +209,8 @@ pub enum ZIndexPrefab {
             Self::Global(g) => ZIndex::Global(g),
         }
     }
-} impl Default for ZIndexPrefab {
+}
+impl Default for ZIndexPrefab {
     fn default() -> Self {
         Self::Local(0)
     }
@@ -206,8 +234,8 @@ pub struct TextBundlePrefab {
 
     #[serde(default)]
     pub background_color: BackgroundColorPrefab,
-
-} impl Default for TextBundlePrefab {
+}
+impl Default for TextBundlePrefab {
     fn default() -> Self {
         Self {
             background_color: Default::default(),
@@ -218,7 +246,8 @@ pub struct TextBundlePrefab {
             z_index: Default::default(),
         }
     }
-} impl PrefabData for TextBundlePrefab {
+}
+impl PrefabData for TextBundlePrefab {
     fn insert_into_entity(self, entidade: &mut bevy::prelude::EntityWorldMut) {
         let text_bundle = TextBundle {
             background_color: self.background_color.into_component(),
@@ -235,7 +264,7 @@ pub struct TextBundlePrefab {
         let server: Option<&AssetServer> = _world.get_resource();
         let Some(asset_server) = server else {
             warn!(target: "structs::ui", "AssetServer doesn't exist");
-            return true
+            return true;
         };
         self.text.load(asset_server)
     }
@@ -248,22 +277,28 @@ pub struct TextPrefab {
     pub alignment: TextAlignment,
     #[serde(default = "def_break")]
     pub linebreak_behavior: BreakLineOn,
-    pub default_font: Option<HandlePrefab<Font>>
-} impl TextPrefab {
+    #[serde(default)]
+    pub default_font: HandlePrefab<Font>,
+}
+impl TextPrefab {
     pub fn into_text(mut self) -> Text {
-        let sections: Vec<TextSection> = self.sections.drain(0..self.sections.len()).filter_map(|section: TextSectionPrefab| {
-            section.into_section(self.default_font.clone())
-        }).collect();
+        let sections: Vec<TextSection> = self
+            .sections
+            .drain(0..self.sections.len())
+            .filter_map(|section: TextSectionPrefab| {
+                section.into_section(self.default_font.clone())
+            })
+            .collect();
         Text {
             sections,
             alignment: self.alignment,
-            linebreak_behavior: self.linebreak_behavior
+            linebreak_behavior: self.linebreak_behavior,
         }
     }
 
     pub fn load(&mut self, asset_server: &AssetServer) -> bool {
         let mut loaded = false;
-        if let Some(def_font) = self.default_font.as_mut() {
+        if let Some(def_font) = self.default_font.into_option_mut() {
             let def_handle = def_font.load_self(&asset_server);
             if let Some(dh) = def_handle {
                 *def_font = HandlePrefab::Loaded(dh);
@@ -276,14 +311,14 @@ pub struct TextPrefab {
         }
         loaded
     }
-
-} impl Default for TextPrefab {
+}
+impl Default for TextPrefab {
     fn default() -> Self {
         Self {
             sections: Default::default(),
             alignment: TextAlignment::Left,
             linebreak_behavior: BreakLineOn::WordBoundary,
-            default_font: None
+            default_font: HandlePrefab::None,
         }
     }
 }
@@ -294,52 +329,57 @@ fn def_break() -> BreakLineOn {
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct TextSectionPrefab {
-    text: String,
-    style: TextStylePrefab
-} impl TextSectionPrefab {
-    pub fn into_section(self, def_handle: Option<HandlePrefab<Font>>) -> Option<TextSection> {
+    pub text: String,
+    #[serde(default)]
+    pub style: TextStylePrefab,
+}
+impl TextSectionPrefab {
+    pub fn into_section(self, def_handle: HandlePrefab<Font>) -> Option<TextSection> {
         let style = self.style.into_text_style(def_handle);
         let Some(s) = style else {
             println!("[warn] No font given");
             return None;
         };
-        Some(
-            TextSection { value: self.text, style: s }
-        )
+        Some(TextSection {
+            value: self.text,
+            style: s,
+        })
     }
 }
 
 #[derive(Clone, Deserialize, Serialize)]
 pub struct TextStylePrefab {
-
     /// A font must be defined at least in one place.
-    font: Option<HandlePrefab<Font>>,
+    #[serde(default)]
+    font: HandlePrefab<Font>,
+
+    #[serde(default = "default_font_size")]
     font_size: f32,
-    color: ColorPrefab
-} impl TextStylePrefab {
-    pub fn into_text_style(self, def_handle: Option<HandlePrefab<Font>>) -> Option<TextStyle> {
-        let handle = if let Some(h) = self.font {
+    #[serde(default)]
+    color: ColorPrefab,
+}
+impl TextStylePrefab {
+    pub fn into_text_style(self, def_handle: HandlePrefab<Font>) -> Option<TextStyle> {
+        let handle = if let Some(h) = self.font.into_option() {
             h.into_handle()
-        } else if let Some(h) = def_handle {
+        } else if let Some(h) = def_handle.into_option() {
             h.into_handle()
         } else {
-            return None;
+            Some(Default::default())
         };
         let Some(font) = handle else {
             return None;
         };
-        Some(
-            TextStyle {
-                font,
-                font_size: self.font_size,
-                color: self.color.into_color()
-            }
-        )
+        Some(TextStyle {
+            font,
+            font_size: self.font_size,
+            color: self.color.into_color(),
+        })
     }
     pub fn load_self(&mut self, asset_server: &AssetServer) -> bool {
-        if let Some(h) = self.font.as_ref() {
+        if let Some(h) = self.font.into_option_mut() {
             if let Some(handle) = h.load_self(asset_server) {
-                self.font = Some(HandlePrefab::Loaded(handle));
+                *h = HandlePrefab::Loaded(handle);
                 false
             } else {
                 true
@@ -348,6 +388,19 @@ pub struct TextStylePrefab {
             false
         }
     }
+}
+impl Default for TextStylePrefab {
+    fn default() -> Self {
+        Self {
+            font: Default::default(),
+            font_size: 12.,
+            color: Default::default(),
+        }
+    }
+}
+
+fn default_font_size() -> f32 {
+    12.
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -365,7 +418,8 @@ pub struct ImageBundlePrefab {
     pub visibility: VisibilityPrefab,
     #[serde(default)]
     pub z_index: ZIndexPrefab,
-} impl PrefabData for ImageBundlePrefab {
+}
+impl PrefabData for ImageBundlePrefab {
     fn insert_into_entity(self, entidade: &mut bevy::prelude::EntityWorldMut) {
         let Some(image) = self.image.into_image() else {
             warn!(target: "structs::ui", "UiImage with no image found");
@@ -402,14 +456,15 @@ pub struct UiImagePrefab {
     flip_x: bool,
 
     #[serde(default)]
-    flip_y: bool
-} impl UiImagePrefab {
+    flip_y: bool,
+}
+impl UiImagePrefab {
     pub fn into_image(self) -> Option<UiImage> {
         if let Some(ui_image) = self.texture.into_handle() {
             Some(UiImage {
                 texture: ui_image,
                 flip_x: self.flip_x,
-                flip_y: self.flip_y
+                flip_y: self.flip_y,
             })
         } else {
             None
@@ -444,7 +499,8 @@ pub struct ButtonBundlePrefab {
     pub visibility: VisibilityPrefab,
     #[serde(default)]
     pub z_index: ZIndexPrefab,
-} impl PrefabData for ButtonBundlePrefab {
+}
+impl PrefabData for ButtonBundlePrefab {
     fn insert_into_entity(self, entidade: &mut bevy::prelude::EntityWorldMut) {
         let ui_image = if let Some(image) = self.image {
             if let Some(ui_img) = image.into_image() {
@@ -484,4 +540,68 @@ pub struct ButtonBundlePrefab {
         };
         ui_img.load(asset_server)
     }
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(rename = "Label")]
+pub struct LabelPrefab;
+impl IntoComponent for LabelPrefab {
+    type Component = Label;
+    fn into_component(self) -> Self::Component {
+        Label
+    }
+}
+
+impl IntoComponent for FocusPolicy {
+    type Component = Self;
+    fn into_component(self) -> Self::Component {
+        self
+    }
+}
+
+#[derive(PrefabData, Clone, Deserialize, Serialize)]
+pub struct Common {
+    style: StylePrefab,
+    focus_policy: FocusPolicy,
+    visibility: VisibilityPrefab,
+    z_index: ZIndexPrefab,
+}
+
+// Add the needed data to render the text
+// This will not add the flags the text need to render, only the text
+
+impl PrefabData for TextPrefab {
+    fn insert_into_entity(self, entity: &mut bevy::prelude::EntityWorldMut) {
+        let text = self.into_text();
+        entity.insert(text);
+    }
+    fn load_sub_assets(&mut self, _world: &mut bevy::prelude::World) -> bool {
+        let Some(asset_server): Option<&AssetServer> = _world.get_resource() else {
+            warn!(target: "ui", "AssetServer doesn't exist");
+            return true;
+        };
+        self.load(asset_server)
+    }
+}
+
+impl PrefabData for UiImagePrefab {
+    fn insert_into_entity(self, entity: &mut bevy::prelude::EntityWorldMut) {
+        if let Some(image) = self.into_image() {
+            entity.insert(image);
+        }
+    }
+
+    fn load_sub_assets(&mut self, _world: &mut bevy::prelude::World) -> bool {
+        let Some(asset_server): Option<&AssetServer> = _world.get_resource() else {
+            warn!(target: "ui", "AssetServer doesn't exist");
+            return true;
+        };
+        self.load(asset_server)
+    }
+}
+
+#[derive(Clone, Deserialize, Serialize, PrefabData)]
+pub struct General {
+    text_data: Option<TextPrefab>,
+    image_data: Option<UiImagePrefab>,
 }
