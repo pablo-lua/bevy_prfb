@@ -115,9 +115,9 @@ pub mod general {
         Loaded(Handle<A>),
 
         // When no file is expected, this will insert an Handle<A>::default in the entity
-        None
-
-    } impl <A: Asset>HandlePrefab<A> {
+        None,
+    }
+    impl<A: Asset> HandlePrefab<A> {
         pub fn load_self(&self, asset_server: &AssetServer) -> Option<Handle<A>> {
             match self {
                 Self::File(s) => Some(asset_server.load(s.to_owned())),
@@ -125,9 +125,7 @@ pub mod general {
                     println!("[warn] Tried to load already loaded asset");
                     None
                 }
-                Self::None => {
-                    Some(Default::default())
-                }
+                Self::None => Some(Default::default()),
             }
         }
 
@@ -138,8 +136,35 @@ pub mod general {
                     None
                 }
                 HandlePrefab::Loaded(h) => Some(h),
-                HandlePrefab::None => Some(Default::default())
+                HandlePrefab::None => Some(Default::default()),
             }
+        }
+
+        // If self is None, returns None
+        pub fn into_option(self) -> Option<Self> {
+            match self {
+                HandlePrefab::None => None,
+                _ => Some(self),
+            }
+        }
+
+        pub fn into_option_ref(&self) -> Option<&Self> {
+            match self {
+                HandlePrefab::None => None,
+                _ => Some(self),
+            }
+        }
+
+        pub fn into_option_mut(&mut self) -> Option<&mut Self> {
+            match self {
+                HandlePrefab::None => None,
+                _ => Some(self),
+            }
+        }
+    }
+    impl<A: Asset> Default for HandlePrefab<A> {
+        fn default() -> Self {
+            Self::None
         }
     }
 
@@ -167,17 +192,19 @@ pub mod general {
         Rgba(f32, f32, f32, f32),
         RgbaLinear(f32, f32, f32, f32),
         Hsla(f32, f32, f32, f32),
-        Lcha(f32, f32, f32, f32)
-    } impl ColorPrefab {
+        Lcha(f32, f32, f32, f32),
+    }
+    impl ColorPrefab {
         pub fn into_color(self) -> Color {
             match self {
                 ColorPrefab::Hsla(h, s, l, a) => Color::hsla(h, s, l, a),
                 ColorPrefab::Lcha(l, c, h, a) => Color::lcha(l, c, h, a),
                 ColorPrefab::Rgba(r, g, b, a) => Color::rgba(r, g, b, a),
-                ColorPrefab::RgbaLinear(r, g, b, a) => Color::rgba_linear(r, g, b, a)
+                ColorPrefab::RgbaLinear(r, g, b, a) => Color::rgba_linear(r, g, b, a),
             }
         }
-    } impl Default for ColorPrefab {
+    }
+    impl Default for ColorPrefab {
         fn default() -> Self {
             Self::Rgba(1., 1., 1., 1.)
         }

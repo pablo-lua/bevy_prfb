@@ -1,7 +1,8 @@
+use crate as bevy_prfb;
 use bevy::{
     asset::AssetServer,
     log::warn,
-    render::{color::Color, texture::Image},
+    render::texture::Image,
     text::{BreakLineOn, Font, Text, TextAlignment, TextSection, TextStyle},
     ui::{
         node_bundles::{ButtonBundle, ImageBundle, NodeBundle, TextBundle},
@@ -15,9 +16,14 @@ use bevy::{
 use bevy_prfb_macro::PrefabData;
 use serde::{Deserialize, Serialize};
 
-use crate::{prefab::{IntoComponent, PrefabData}, ColorPrefab};
+use crate::{
+    prefab::{IntoComponent, PrefabData},
+    ColorPrefab,
+};
 
-use super::general::{HandlePrefab, BackgroundColorPrefab, BorderColorPrefab, TransformPrefab, VisibilityPrefab};
+use super::general::{
+    BackgroundColorPrefab, BorderColorPrefab, HandlePrefab, TransformPrefab, VisibilityPrefab,
+};
 
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(default)]
@@ -332,6 +338,15 @@ pub struct TextStylePrefab {
             }
         } else {
             false
+        }
+    }
+}
+impl Default for TextStylePrefab {
+    fn default() -> Self {
+        Self {
+            font: Default::default(),
+            font_size: 12.,
+            color: Default::default(),
         }
     }
 }

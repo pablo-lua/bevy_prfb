@@ -2,12 +2,12 @@ use bevy::{
     ecs::system::{In, RunSystemOnce},
     math::{Rect, Vec2},
     prelude::{AssetServer, Res},
-    render::{color::Color, texture::Image},
+    render::texture::Image,
     sprite::{Sprite, SpriteBundle},
 };
 use serde::{Deserialize, Serialize};
 
-use crate::{PrefabData, IntoComponent, ColorPrefab};
+use crate::{ColorPrefab, IntoComponent, PrefabData};
 
 use super::general::{AnchorPrefab, HandlePrefab, TransformPrefab, VisibilityPrefab};
 
