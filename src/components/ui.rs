@@ -86,9 +86,9 @@ pub struct StylePrefab {
     pub justify_self: JustifySelf,
     pub align_content: AlignContent,
     pub justify_content: JustifyContent,
-    pub margin: UiRect,
-    pub padding: UiRect,
-    pub border: UiRect,
+    pub margin: UiRectPrefab,
+    pub padding: UiRectPrefab,
+    pub border: UiRectPrefab,
     pub flex_direction: FlexDirection,
     pub flex_wrap: FlexWrap,
     pub flex_grow: f32,
@@ -129,9 +129,9 @@ impl IntoComponent for StylePrefab {
             justify_self: self.justify_self,
             align_content: self.align_content,
             justify_content: self.justify_content,
-            margin: self.margin,
-            padding: self.padding,
-            border: self.border,
+            margin: self.margin.into_rect(),
+            padding: self.padding.into_rect(),
+            border: self.border.into_rect(),
             flex_direction: self.flex_direction,
             flex_wrap: self.flex_wrap,
             flex_grow: self.flex_grow,
@@ -148,6 +148,52 @@ impl IntoComponent for StylePrefab {
             grid_column: self.grid_column,
         }
     }
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+pub enum UiRectPrefab {
+    All(Val),
+    Horizontal(Val),
+    Vertical(Val),
+    Custom {
+        #[serde(default = "val_zero")]
+        right: Val,
+        #[serde(default = "val_zero")]
+        top: Val,
+        #[serde(default = "val_zero")]
+        left: Val,
+        #[serde(default = "val_zero")]
+        bottom: Val,
+    },
+}
+impl UiRectPrefab {
+    fn into_rect(self) -> UiRect {
+        match self {
+            Self::All(v) => UiRect::all(v),
+            Self::Horizontal(h) => UiRect::horizontal(h),
+            Self::Vertical(v) => UiRect::vertical(v),
+            Self::Custom {
+                right,
+                top,
+                left,
+                bottom,
+            } => UiRect {
+                left,
+                right,
+                top,
+                bottom,
+            },
+        }
+    }
+}
+impl Default for UiRectPrefab {
+    fn default() -> Self {
+        Self::All(val_zero())
+    }
+}
+
+fn val_zero() -> Val {
+    Val::ZERO
 }
 
 #[derive(Clone, Deserialize, Serialize)]
