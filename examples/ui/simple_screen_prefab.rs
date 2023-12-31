@@ -1,5 +1,5 @@
-use bevy_prfb::ui::{CreateUiExt, UiCreator};
 use bevy::prelude::*;
+use bevy_prfb::ui::{CreateUiExt, UiCreator};
 //use serde::{Deserialize, Serialize};
 
 fn main() {

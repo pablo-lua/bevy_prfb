@@ -4,19 +4,24 @@ use serde::{Deserialize, Serialize};
 
 fn main() {
     App::new()
-    .add_systems(Startup, setup)
-    .add_systems(Update, assert_is_loaded)
-    .run();
+        .add_systems(Startup, setup)
+        .add_systems(Update, assert_is_loaded)
+        .run();
 }
 
 #[derive(Component)]
 struct Marker;
 fn setup(mut cmd: Commands) {
-    let prefab = cmd.load_prefab::<ValuePrefab, ValueFormatter, _>("assets/prefab/prefab_with_parents.ron");
+    let prefab =
+        cmd.load_prefab::<ValuePrefab, ValueFormatter, _>("assets/prefab/prefab_with_parents.ron");
     prefab.spawn(Marker);
 }
 
-fn assert_is_loaded(query_parent: Query<Entity, With<Marker>>, children: Query<&Children>, value_query: Query<&Value>) {
+fn assert_is_loaded(
+    query_parent: Query<Entity, With<Marker>>,
+    children: Query<&Children>,
+    value_query: Query<&Value>,
+) {
     let entity = query_parent.get_single().unwrap();
     if let Ok(v) = value_query.get(entity) {
         println!("Parent with value: {}", v.0);
@@ -51,13 +56,13 @@ enum ValueTree {
     Unique(ValuePrefab),
     Parent {
         children: Vec<ValueTree>,
-        value: ValuePrefab
-    }
+        value: ValuePrefab,
+    },
 }
 
 struct ValueFormatter;
 impl Format<ValuePrefab> for ValueFormatter {
-    fn load_from_bytes(bytes: Vec<u8>) -> Result<Prefab<ValuePrefab>,  Box<dyn std::error::Error>> {
+    fn load_from_bytes(bytes: Vec<u8>) -> Result<Prefab<ValuePrefab>, Box<dyn std::error::Error>> {
         let mut de = ron::de::Deserializer::from_bytes(&bytes)?;
         let valor = ValueTree::deserialize(&mut de)?;
         let mut prefab = Prefab::new();
@@ -66,21 +71,18 @@ impl Format<ValuePrefab> for ValueFormatter {
     }
 }
 
-fn value_tree(
-    value: ValueTree,
-    prefab: &mut Prefab<ValuePrefab>,
-    index: usize,
-    parent_value: i32
-) {
+fn value_tree(value: ValueTree, prefab: &mut Prefab<ValuePrefab>, index: usize, parent_value: i32) {
     match value {
         ValueTree::Unique(v) => {
-            prefab.get_entity_mut(index)
+            prefab
+                .get_entity_mut(index)
                 .expect("Unreachable: Entity should be set")
                 .set_data(v.add(parent_value));
         }
         ValueTree::Parent { children, value } => {
             let parent_val = value.0 + parent_value;
-            prefab.get_entity_mut(index)
+            prefab
+                .get_entity_mut(index)
                 .expect("Unreachable: Entity should be set")
                 .set_data(value.add(parent_value));
 

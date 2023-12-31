@@ -1,25 +1,40 @@
-use std::{marker::PhantomData, path::Path, fs, io::{Read, self}, collections::HashMap, error::Error};
+use std::{
+    collections::HashMap,
+    error::Error,
+    fs,
+    io::{self, Read},
+    marker::PhantomData,
+    path::Path,
+};
 
 use bevy::{
-    prelude::{
-        Bundle, App, Plugin, Commands, Entity, Resource, Event
+    ecs::{
+        component::Component,
+        system::Command,
+        world::{EntityWorldMut, World},
     },
-    ecs::{system::Command, world::{World, EntityWorldMut}, component::Component},
-    hierarchy::BuildWorldChildren, log::{warn, error}
+    hierarchy::BuildWorldChildren,
+    log::{error, warn},
+    prelude::{App, Bundle, Commands, Entity, Event, Plugin, Resource},
 };
 
 pub struct Prefab<T> {
     entidades: Vec<PrefabEntityBuilder<T>>,
-} impl <T>Prefab<T> {
+}
+impl<T> Prefab<T> {
     pub fn new() -> Self {
-        Self { entidades: vec![PrefabEntityBuilder::default()] }
+        Self {
+            entidades: vec![PrefabEntityBuilder::default()],
+        }
     }
 
     pub fn from_data(data: Option<T>) -> Self {
-        Self { entidades: vec![PrefabEntityBuilder::new(None, data)] }
+        Self {
+            entidades: vec![PrefabEntityBuilder::new(None, data)],
+        }
     }
 
-    pub fn add(&mut self, parent: Option<usize>, data: Option<T> ) -> usize {
+    pub fn add(&mut self, parent: Option<usize>, data: Option<T>) -> usize {
         let index = self.entidades.len();
         self.entidades.push(PrefabEntityBuilder::new(parent, data));
         index
@@ -50,8 +65,14 @@ pub struct Prefab<T> {
     }
 
     /// Function must be used only after prepared
-    pub fn spawn(&mut self, processed_children: &HashMap<usize, Vec<usize>>, init: &usize, world: &mut World) -> Option<Entity>
-    where T: PrefabData
+    pub fn spawn(
+        &mut self,
+        processed_children: &HashMap<usize, Vec<usize>>,
+        init: &usize,
+        world: &mut World,
+    ) -> Option<Entity>
+    where
+        T: PrefabData,
     {
         let mut root_entity = world.spawn_empty();
         if let Some(c) = processed_children.get(init) {
@@ -69,24 +90,27 @@ pub struct Prefab<T> {
                     if let Some(child) = child {
                         root_entity.add_child(child);
                     }
-
                 }
             }
-
         } else {
             // Probably an error with wrong adding the children.
             warn!(target: "prefab", "[warning] Entity not found in the prefab with index {}", init);
             return None;
         }
         Some(root_entity.id())
-
     }
 
     // The first entity will have your specified root
-    fn spawn_with_root(&mut self, processed_children: &HashMap<usize, Vec<usize>>, init: &usize, world: &mut World, root: Entity) -> Option<Entity>
-    where T: PrefabData
+    fn spawn_with_root(
+        &mut self,
+        processed_children: &HashMap<usize, Vec<usize>>,
+        init: &usize,
+        world: &mut World,
+        root: Entity,
+    ) -> Option<Entity>
+    where
+        T: PrefabData,
     {
-
         //Entity must exist
         let mut root = world.entity_mut(root);
         if let Some(c) = processed_children.get(init) {
@@ -103,10 +127,8 @@ pub struct Prefab<T> {
                     if let Some(child) = child {
                         root.add_child(child);
                     }
-
                 }
             }
-
         } else {
             // Probably an error with wrong adding the children.
             warn!(target: "prefab", "[warning] Entity not found in the prefab with index {}", init);
@@ -118,7 +140,8 @@ pub struct Prefab<T> {
     /// This function will load all the assets
     /// If you want to be performatic, store the assets and just borrow then afterwards
     pub fn prepare_entities(&mut self, world: &mut World) -> bool
-    where T: PrefabData
+    where
+        T: PrefabData,
     {
         let mut loaded = false;
         for entidade in self.entidades.iter_mut() {
@@ -126,24 +149,28 @@ pub struct Prefab<T> {
         }
         loaded
     }
-
-} impl <T>Default for Prefab<T> {
+}
+impl<T> Default for Prefab<T> {
     fn default() -> Self {
         Self::new()
     }
-} impl <T>Clone for Prefab<T>
-where T: Clone
+}
+impl<T> Clone for Prefab<T>
+where
+    T: Clone,
 {
     fn clone(&self) -> Self {
-        Self { entidades: self.entidades.clone() }
+        Self {
+            entidades: self.entidades.clone(),
+        }
     }
 }
 
 pub struct PrefabEntityBuilder<T> {
     parent: Option<usize>,
     data: Option<T>,
-
-} impl <T>PrefabEntityBuilder<T> {
+}
+impl<T> PrefabEntityBuilder<T> {
     pub fn new(parent: Option<usize>, data: Option<T>) -> Self {
         Self { parent, data }
     }
@@ -153,11 +180,11 @@ pub struct PrefabEntityBuilder<T> {
     }
 
     pub fn get_data_or_default(&mut self) -> &mut T
-    where T: Default
+    where
+        T: Default,
     {
         self.data.get_or_insert_with(T::default)
     }
-
 
     pub fn get_data(&self) -> Option<&T> {
         self.data.as_ref()
@@ -171,8 +198,7 @@ pub struct PrefabEntityBuilder<T> {
         self.parent = Some(parent);
     }
 
-    pub fn set_data(&mut self, data: T)
-    {
+    pub fn set_data(&mut self, data: T) {
         self.data = Some(data);
     }
 
@@ -181,7 +207,8 @@ pub struct PrefabEntityBuilder<T> {
     }
 
     pub fn prepare_data(&mut self, world: &mut World) -> bool
-    where T: PrefabData
+    where
+        T: PrefabData,
     {
         if let Some(data) = self.get_data_mut() {
             data.load_sub_assets(world)
@@ -189,26 +216,33 @@ pub struct PrefabEntityBuilder<T> {
             false
         }
     }
-} impl <T>Default for PrefabEntityBuilder<T> {
+}
+impl<T> Default for PrefabEntityBuilder<T> {
     fn default() -> Self {
-        Self { parent: None, data: None }
+        Self {
+            parent: None,
+            data: None,
+        }
     }
-} impl <T>Clone for PrefabEntityBuilder<T>
-where T: Clone
+}
+impl<T> Clone for PrefabEntityBuilder<T>
+where
+    T: Clone,
 {
     fn clone(&self) -> Self {
-        Self { parent: self.parent.clone(), data: self.data.clone() }
+        Self {
+            parent: self.parent.clone(),
+            data: self.data.clone(),
+        }
     }
 }
 
 pub trait PrefabData: Send + Sync + 'static {
-
     /// Transform self into a component and insert into an entity
     fn insert_into_entity(self, entidade: &mut EntityWorldMut);
     fn load_sub_assets(&mut self, _world: &mut World) -> bool {
         false
     }
-
 }
 
 /// Suport trait for simple data that can be easily converted to a Component
@@ -221,9 +255,10 @@ pub trait IntoComponent {
 
 /// The formatter used for deserialize purposes
 pub trait Format<PD>
-where Self: Send + Sync
+where
+    Self: Send + Sync,
 {
-    fn load_from_bytes(bytes: Vec<u8>) -> Result<Prefab<PD>,  Box<dyn Error>>;
+    fn load_from_bytes(bytes: Vec<u8>) -> Result<Prefab<PD>, Box<dyn Error>>;
 }
 
 #[derive(Resource, Default)]
@@ -231,7 +266,9 @@ where Self: Send + Sync
 pub struct PrefabLoader;
 
 impl PrefabLoader {
-    pub fn create_prefab<T: PrefabData, F: Format<T>, S: AsRef<Path>>(nome: S) -> Result<Prefab<T>, Box<dyn Error>> {
+    pub fn create_prefab<T: PrefabData, F: Format<T>, S: AsRef<Path>>(
+        nome: S,
+    ) -> Result<Prefab<T>, Box<dyn Error>> {
         let prefab = F::load_from_bytes(Self::load_prefab(nome)?)?;
         Ok(prefab)
     }
@@ -258,12 +295,12 @@ impl PrefabLoader {
         };
         Ok(content)
     }
-
 }
 pub struct PrefabCommands<'c, 'w, 's, PD: PrefabData> {
     prefab: Prefab<PD>,
-    commands: &'c mut Commands<'w, 's>
-} impl <'c, 'w, 's, PD: PrefabData>PrefabCommands<'c, 'w, 's, PD> {
+    commands: &'c mut Commands<'w, 's>,
+}
+impl<'c, 'w, 's, PD: PrefabData> PrefabCommands<'c, 'w, 's, PD> {
     pub fn get_entity_mut(&mut self, index: usize) -> Option<&mut PrefabEntityBuilder<PD>> {
         self.prefab.get_entity_mut(index)
     }
@@ -289,7 +326,8 @@ pub struct PrefabCommands<'c, 'w, 's, PD: PrefabData> {
     }
 
     pub fn prepare_spawn<B: Bundle>(self, bundle: B) -> Entity {
-        self.commands.prepare_and_spawn_prefab_with(self.prefab, bundle)
+        self.commands
+            .prepare_and_spawn_prefab_with(self.prefab, bundle)
     }
 
     pub fn prepare(self) {
@@ -306,32 +344,47 @@ pub struct PrefabCommands<'c, 'w, 's, PD: PrefabData> {
 }
 
 pub trait PrefabCommandsExt<'c, 'w, 's> {
-
     /// Load the prefab and create the commands
-    fn load_prefab<PD: PrefabData, F: Format<PD>, S: AsRef<Path>>(&'c mut self, name: S) -> PrefabCommands<'c, 'w, 's, PD>;
+    fn load_prefab<PD: PrefabData, F: Format<PD>, S: AsRef<Path>>(
+        &'c mut self,
+        name: S,
+    ) -> PrefabCommands<'c, 'w, 's, PD>;
 
     /// Spawn an external prefab
     fn spawn_prefab<PD: PrefabData>(&mut self, prefab: Prefab<PD>) -> Entity;
 
     /// Spawn an external prefab with a bundle in the parent
-    fn spawn_prefab_with<PD: PrefabData, B: Bundle>(&mut self, prefab: Prefab<PD>, bundle: B) -> Entity;
+    fn spawn_prefab_with<PD: PrefabData, B: Bundle>(
+        &mut self,
+        prefab: Prefab<PD>,
+        bundle: B,
+    ) -> Entity;
 
     /// Prepare the assets and then Spawn
     fn prepare_and_spawn_prefab<PD: PrefabData>(&mut self, prefab: Prefab<PD>) -> Entity;
 
     /// Prepare the assets and then Spawn with the given bundle
-    fn prepare_and_spawn_prefab_with<PD: PrefabData, B: Bundle>(&mut self, prefab: Prefab<PD>, bundle: B) -> Entity ;
+    fn prepare_and_spawn_prefab_with<PD: PrefabData, B: Bundle>(
+        &mut self,
+        prefab: Prefab<PD>,
+        bundle: B,
+    ) -> Entity;
 
     /// Take the prefab and will prepare, when loaded, the prefab will be returned as a [`LoadedPrefab`] event
     fn prepare_prefab<PD: PrefabData>(&mut self, prefab: Prefab<PD>);
 
     /// Create prefab commands from a external prefab
-    fn prefab_into_commands<PD: PrefabData>(&'c mut self, prefab: Prefab<PD>) -> PrefabCommands<'c, 'w, 's, PD>;
-
+    fn prefab_into_commands<PD: PrefabData>(
+        &'c mut self,
+        prefab: Prefab<PD>,
+    ) -> PrefabCommands<'c, 'w, 's, PD>;
 }
 
-impl <'c, 'w, 's>PrefabCommandsExt<'c, 'w, 's> for Commands<'w, 's> {
-    fn load_prefab<PD: PrefabData, F: Format<PD>, S: AsRef<Path>>(&'c mut self, name: S) -> PrefabCommands<'c, 'w, 's, PD> {
+impl<'c, 'w, 's> PrefabCommandsExt<'c, 'w, 's> for Commands<'w, 's> {
+    fn load_prefab<PD: PrefabData, F: Format<PD>, S: AsRef<Path>>(
+        &'c mut self,
+        name: S,
+    ) -> PrefabCommands<'c, 'w, 's, PD> {
         let prefab = PrefabLoader::create_prefab::<PD, F, S>(name);
         let prefab = if let Err(e) = prefab {
             error!(target: "prefab", "[error] Prefab Error: {e}");
@@ -339,7 +392,10 @@ impl <'c, 'w, 's>PrefabCommandsExt<'c, 'w, 's> for Commands<'w, 's> {
         } else {
             prefab.unwrap()
         };
-        PrefabCommands { prefab, commands: self }
+        PrefabCommands {
+            prefab,
+            commands: self,
+        }
     }
 
     fn spawn_prefab<PD: PrefabData>(&mut self, prefab: Prefab<PD>) -> Entity {
@@ -349,15 +405,25 @@ impl <'c, 'w, 's>PrefabCommandsExt<'c, 'w, 's> for Commands<'w, 's> {
         entity
     }
 
-    fn spawn_prefab_with<PD: PrefabData, B: Bundle>(&mut self, prefab: Prefab<PD>, bundle: B) -> Entity {
+    fn spawn_prefab_with<PD: PrefabData, B: Bundle>(
+        &mut self,
+        prefab: Prefab<PD>,
+        bundle: B,
+    ) -> Entity {
         let entity = self.spawn(bundle).id();
 
         self.add(SpawnPrefab(prefab, entity.clone()));
         entity
     }
 
-    fn prefab_into_commands<PD: PrefabData>(&'c mut self, prefab: Prefab<PD>) -> PrefabCommands<'c, 'w, 's, PD> {
-        PrefabCommands { prefab, commands: self }
+    fn prefab_into_commands<PD: PrefabData>(
+        &'c mut self,
+        prefab: Prefab<PD>,
+    ) -> PrefabCommands<'c, 'w, 's, PD> {
+        PrefabCommands {
+            prefab,
+            commands: self,
+        }
     }
 
     fn prepare_and_spawn_prefab<PD: PrefabData>(&mut self, prefab: Prefab<PD>) -> Entity {
@@ -367,7 +433,11 @@ impl <'c, 'w, 's>PrefabCommandsExt<'c, 'w, 's> for Commands<'w, 's> {
         entity
     }
 
-    fn prepare_and_spawn_prefab_with<PD: PrefabData, B: Bundle>(&mut self, prefab: Prefab<PD>, bundle: B) -> Entity {
+    fn prepare_and_spawn_prefab_with<PD: PrefabData, B: Bundle>(
+        &mut self,
+        prefab: Prefab<PD>,
+        bundle: B,
+    ) -> Entity {
         let entity = self.spawn(bundle).id();
 
         self.add(PrepareAndSpawnPrefab(prefab, entity.clone()));
@@ -380,18 +450,20 @@ impl <'c, 'w, 's>PrefabCommandsExt<'c, 'w, 's> for Commands<'w, 's> {
 }
 
 pub struct SpawnPrefab<PD: PrefabData>(Prefab<PD>, Entity);
-impl <PD: PrefabData> Command for SpawnPrefab<PD> {
+impl<PD: PrefabData> Command for SpawnPrefab<PD> {
     fn apply(mut self, world: &mut World) {
         let processed_children = self.0.all_parents_childs();
 
-        self.0.spawn_with_root(&processed_children, &0, world, self.1).unwrap();
+        self.0
+            .spawn_with_root(&processed_children, &0, world, self.1)
+            .unwrap();
     }
 }
 
 /// This command will consume the prefab after the spawning.
 /// If you want to prepare and retrieve the prefab, use PreparePrefab
 pub struct PrepareAndSpawnPrefab<PD: PrefabData>(Prefab<PD>, Entity);
-impl <PD: PrefabData> Command for PrepareAndSpawnPrefab<PD> {
+impl<PD: PrefabData> Command for PrepareAndSpawnPrefab<PD> {
     fn apply(self, world: &mut World) {
         let mut prefab = self.0;
         let resultado = prefab.prepare_entities(world);
@@ -405,13 +477,13 @@ impl <PD: PrefabData> Command for PrepareAndSpawnPrefab<PD> {
 }
 
 pub struct PreparePrefab<PD: PrefabData>(Prefab<PD>);
-impl <PD: PrefabData> Command for PreparePrefab<PD> {
+impl<PD: PrefabData> Command for PreparePrefab<PD> {
     fn apply(self, world: &mut World) {
         let mut prefab = self.0;
         let resultado = prefab.prepare_entities(world);
         let event = LoadedPrefab {
             prefab,
-            succefully_loaded: resultado
+            succefully_loaded: resultado,
         };
         world.send_event(event);
     }
@@ -422,32 +494,35 @@ pub struct PrefabEntity<PD>(PhantomData<PD>);
 
 #[derive(Default)]
 pub struct PrefabPlugin<PD: PrefabData> {
-    marker: PhantomData<PD>
-} impl <PD: PrefabData>PrefabPlugin<PD> {
+    marker: PhantomData<PD>,
+}
+impl<PD: PrefabData> PrefabPlugin<PD> {
     pub fn new() -> Self {
-        Self { marker: PhantomData::default() }
+        Self {
+            marker: PhantomData::default(),
+        }
     }
 }
 
-impl <PD: PrefabData>Plugin for PrefabPlugin<PD> {
+impl<PD: PrefabData> Plugin for PrefabPlugin<PD> {
     fn build(&self, app: &mut App) {
         app.add_event::<LoadedPrefab<PD>>();
     }
-
 }
 
 #[derive(Event)]
 pub struct LoadedPrefab<PD> {
     pub prefab: Prefab<PD>,
-    pub succefully_loaded: bool
+    pub succefully_loaded: bool,
 }
 
 pub mod implements {
-    use super::{PrefabData, IntoComponent};
-    use bevy::ecs::{world::{World, EntityWorldMut}, component::Component};
+    use super::{IntoComponent, PrefabData};
+    use bevy::ecs::world::{EntityWorldMut, World};
 
-    impl <T>PrefabData for Option<T>
-    where T: PrefabData
+    impl<T> PrefabData for Option<T>
+    where
+        T: PrefabData,
     {
         fn insert_into_entity(self, entidade: &mut EntityWorldMut) {
             if let Some(data) = self {
@@ -462,8 +537,9 @@ pub mod implements {
         }
     }
 
-    impl <T> PrefabData for T
-    where T: IntoComponent + Send + Sync + 'static,
+    impl<T> PrefabData for T
+    where
+        T: IntoComponent + Send + Sync + 'static,
     {
         fn insert_into_entity(self, entidade: &mut EntityWorldMut) {
             entidade.insert(self.into_component());
@@ -523,5 +599,4 @@ pub mod implements {
     impl_prefab_data!(A:0, B:1, C:2, D:3, E:4, F:5, G:6, H:7, I:8, J:9, K:10, L:11, M:12, N:13, O:14, P:15, Q:16, R:17, S:18);
     impl_prefab_data!(A:0, B:1, C:2, D:3, E:4, F:5, G:6, H:7, I:8, J:9, K:10, L:11, M:12, N:13, O:14, P:15, Q:16, R:17, S:18, T:19);
     impl_prefab_data!(A:0, B:1, C:2, D:3, E:4, F:5, G:6, H:7, I:8, J:9, K:10, L:11, M:12, N:13, O:14, P:15, Q:16, R:17, S:18, T:19, U:20);
-
 }
